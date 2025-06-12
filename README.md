@@ -98,3 +98,9 @@ Future Enhancements
   Email notifications for registration and offer submissions
   Advanced filters and search in NC Dashboard
 
+License
+   This project is licensed under the MIT License
+
+Author
+   Akshitha Anurag
+   GitHub Profile:
