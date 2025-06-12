@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IAESTE - Organization Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --primary-light: #3d566e;
+            --secondary-color: #3498db;
+            --danger-color: #e74c3c;
+            --danger-hover: #c0392b;
+            --success-color: #2ecc71;
+            --border-color: #e0e0e0;
+            --text-color: #333;
+            --light-bg: #f9f9f9;
+            --white: #ffffff;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .logout-btn {
+            background-color: var(--danger-color);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+        
+        .logout-btn:hover {
+            background-color: var(--danger-hover);
+        }
+        
+        .dashboard-content {
+            display: flex;
+            margin-top: 2rem;
+            gap: 2rem;
+        }
+        
+        .offer-form, .offers-list {
+            flex: 1;
+            background-color: var(--white);
+            padding: 1.5rem;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 500;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .checkbox-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .checkbox-group h3 {
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .checkbox-group label {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 1.5rem;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+        }
+        
+        .radio-option label {
+            margin-left: 0.5rem;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .submit-btn {
+            background-color: var(--secondary-color);
+            color: var(--white);
+            border: none;
+            padding: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        
+        .submit-btn:hover {
+            background-color: var(--primary-light);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--light-bg);
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .file-input {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-content {
+                flex-direction: column;
+            }
+            
+            header {
+                padding: 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .logout-btn {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome, <span id="company-name-display"></span></h1>
+        <button id="logout-btn" class="logout-btn">Logout</button>
+    </header>
+    <div class="container">
+        <div class="dashboard-content">
+            <div class="offer-form">
+                <h2>Submit New Offer</h2>
+                <form id="offer-form">
+                    <div class="form-group">
+                        <label for="duration">Duration (weeks)</label>
+                        <input type="number" id="duration" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stipend">Stipend (per month)</label>
+                        <input type="number" id="stipend" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="field">Field of Work</label>
+                        <input type="text" id="field" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="skills">Required Skills</label>
+                        <textarea id="skills" rows="3" required></textarea>
+                    </div>
+                    <div class="checkbox-group">
+                        <h3>Remuneration</h3>
+                        <label>
+                            <input type="checkbox" id="food">
+                            Food provided
+                        </label>
+                        <label>
+                            <input type="checkbox" id="accommodation">
+                            Accommodation provided
+                        </label>
+                        <label>
+                            <input type="checkbox" id="travel">
+                            Travel expenses covered
+                        </label>
+                    </div>
+                    <div id="accommodation-address-container" style="display: none;">
+                        <div class="form-group">
+                            <label for="accommodation-address">Accommodation Address</label>
+                            <textarea id="accommodation-address" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Work Mode</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="on-site" name="mode" value="on-site" checked>
+                                <label for="on-site">On-site</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="remote" name="mode" value="remote">
+                                <label for="remote">Remote</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="hybrid" name="mode" value="hybrid">
+                                <label for="hybrid">Hybrid</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="stipend-justification-container" style="display: none;">
+                        <div class="form-group">
+                            <label for="stipend-justification">Stipend Justification (for governmental organizations)</label>
+                            <textarea id="stipend-justification" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="offer-pdf">Upload Offer Details (PDF)</label>
+                        <input type="file" id="offer-pdf" accept=".pdf" class="file-input">
+                    </div>
+                    <button type="submit" class="submit-btn">Submit Offer</button>
+                </form>
+            </div>
+            <div class="offers-list">
+                <h2>Your Submitted Offers</h2>
+                <table id="offers-table">
+                    <thead>
+                        <tr>
+                            <th>Duration</th>
+                            <th>Field</th>
+                            <th>Stipend</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Offers will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
