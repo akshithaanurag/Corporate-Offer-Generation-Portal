@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outgoing Exchange Coordinator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .hidden {
+            display: none;
+        }
+        .hidden-section {
+            display: none !important;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #taskList, #textReport, #statisticsOutput {
+            white-space: pre-wrap;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #report-text {
+            white-space: pre-wrap;
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: monospace;
+        }
+        .danger {
+            background-color: #e74c3c;
+        }
+        .danger:hover {
+            background-color: #c0392b;
+        }
+        .success {
+            background-color: #2ecc71;
+        }
+        .success:hover {
+            background-color: #27ae60;
+        }
+        .logged-in-info {
+            background: #e8f4fc;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .button-group {
+            margin-top: 15px;
+        }
+        #offerTypeContainer {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Outgoing Exchange Coordinator</h1>
+        
+        <!-- Login Section -->
+        <div id="login-section" class="section">
+            <h2>Login</h2>
+            <label for="coordinatorName">Coordinator Name:</label>
+            <input type="text" id="coordinatorName" placeholder="Enter your name">
+            <button onclick="login()" class="success">Login</button>
+        </div>
+        
+        <!-- Main Section (hidden until login) -->
+        <div id="main-section" class="hidden">
+            <div class="logged-in-info">
+                <span id="loggedInName">Not logged in</span>
+                <button onclick="logout()" style="float: right;">Logout</button>
+            </div>
+            
+            <!-- Task Input Section -->
+            <div id="taskInputSection" class="section">
+                <h2>Add New Task</h2>
+                <form id="addTaskForm">
+                    <label for="offerCategory">Offer Category:</label>
+                    <select id="offerCategory" onchange="onOfferCategoryChange()" required>
+                        <option value="">-- Select Category --</option>
+                        <option value="Global Internship">Global Internship</option>
+                        <option value="Exchange Offers">Exchange Offers</option>
+                        <option value="Reserved Offers">Reserved Offers</option>
+                    </select>
+                    
+                    <div id="offerTypeContainer" style="display: none;">
+                        <label for="offerType">Offer Type:</label>
+                        <select id="offerType">
+                            <option value="">-- Select Type --</option>
+                        </select>
+                    </div>
+                    
+                    <label for="taskAction">Task Action:</label>
+                    <select id="taskAction" onchange="onTaskActionChange()" required>
+                        <option value="">-- Select Action --</option>
+                        <option value="Nomination">Nomination</option>
+                        <option value="Acceptance">Acceptance</option>
+                        <option value="Rejection">Rejection</option>
+                        <option value="Withdrawal">Withdrawal</option>
+                        <option value="Cancellation">Cancellation</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    
+                    <div id="customTaskActionSection" class="hidden">
+                        <label for="customTaskAction">Custom Action:</label>
+                        <input type="text" id="customTaskAction" placeholder="Enter custom action">
+                    </div>
+                    
+                    <label for="offerNumber">Offer Number:</label>
+                    <input type="text" id="offerNumber" required placeholder="e.g., 12345">
+                    
+                    <label for="candidateName">Candidate Name:</label>
+                    <input type="text" id="candidateName" required placeholder="Enter candidate's name">
+                    
+                    <div class="button-group">
+                        <button type="button" onclick="addTask()" class="success">Add Task</button>
+                        <button type="reset" onclick="resetTaskForm()">Reset Form</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Task Confirmation Section (hidden until needed) -->
+            <div id="taskConfirmSection" class="section hidden">
+                <h2>Confirm Task</h2>
+                <pre id="taskConfirmDetails"></pre>
+                <div class="button-group">
+                    <button onclick="confirmTask()" class="success">Confirm</button>
+                    <button onclick="cancelTask()">Cancel</button>
+                </div>
+            </div>
+            
+            <!-- Task List Section -->
+            <div class="section">
+                <h2>Your Tasks</h2>
+                <pre id="taskList">No tasks added yet.</pre>
+            </div>
+            
+            <!-- Report Generation Section -->
+            <div class="section">
+                <h2>Generate Reports</h2>
+                <div class="button-group">
+                    <button onclick="generateWeeklyReport()">Weekly Report</button>
+                    <button onclick="generate15DaysReport()">15 Days Report</button>
+                    <button onclick="generateMonthlyReport()">Monthly Report</button>
+                    <button id="statisticsBtn">Generate Statistics</button>
+                </div>
+                <pre id="textReport">Reports will appear here...</pre>
+                <pre id="statisticsOutput" class="hidden"></pre>
+            </div>
+            
+            <!-- Admin Section -->
+            <div class="section">
+                <h2>Admin</h2>
+                <button id="deleteAllBtn" class="danger">Delete All Data</button>
+                <p>Warning: This will permanently delete all task data.</p>
+            </div>
+        </div>
+        
+        <!-- Report Section (hidden until report generation) -->
+        <div id="report-section" class="section hidden">
+            <h2>Generated Report</h2>
+            <div class="button-group">
+                <button id="backBtn">Back to Main</button>
+                <button onclick="window.print()">Print Report</button>
+            </div>
+            <pre id="report-text"></pre>
+        </div>
+    </div>
+
+    <script>
+        // script.js content goes here
+        let coordinator = "";
+        let tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+
+        // On page load, pull any saved tasks from localStorage
+        document.addEventListener("DOMContentLoaded", () => {
+            const saved = localStorage.getItem("tasks");
+            if (saved) {
+                tasks = JSON.parse(saved);
+            }
+
+            const backBtn = document.getElementById("backBtn");
+            if (backBtn) {
+                backBtn.addEventListener("click", () => {
+                    document.getElementById("report-section").style.display = "none";
+                    document.getElementById("main-section").classList.remove("hidden-section");
+                });
+            }
+
+            const statBtn = document.getElementById("statisticsBtn");
+            if (statBtn) {
+                statBtn.addEventListener("click", generateStatistics);
+            }
+
+            const deleteBtn = document.getElementById("deleteAllBtn");
+            if (deleteBtn) {
+                deleteBtn.addEventListener("click", deleteAllData);
+            }
+        });
+
+        // --- Login / Logout ---
+        function login() {
+            const nameInput = document.getElementById("coordinatorName").value.trim();
+            if (!nameInput) {
+                alert("Please enter your name");
+                return;
+            }
+            coordinator = nameInput;
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("main-section").classList.remove("hidden");
+            document.getElementById("loggedInName").innerText = `Logged in as: ${coordinator}`;
+            updateTaskList();  // Show this coordinator's existing tasks
+        }
+
+        function logout() {
+            coordinator = "";
+            document.getElementById("coordinatorName").value = "";
+            document.getElementById("login-section").style.display = "block";
+            document.getElementById("main-section").classList.add("hidden");
+            document.getElementById("taskInputSection").style.display = "block";
+            document.getElementById("taskConfirmSection").classList.add("hidden");
+            document.getElementById("taskList").innerText = "No tasks added yet.";
+            document.getElementById("textReport").innerText = "Reports will appear here...";
+            document.getElementById("statisticsOutput").innerText = "";
+            document.getElementById("statisticsOutput").classList.add("hidden");
+        }
+
+        // --- Offer Category Change ---
+        function onOfferCategoryChange() {
+            const category = document.getElementById("offerCategory").value;
+            const offerTypeContainer = document.getElementById("offerTypeContainer");
+            const offerTypeSelect = document.getElementById("offerType");
+            offerTypeSelect.innerHTML = "<option value=\"\">-- Select Type --</option>";
+
+            if (category === "Global Internship") {
+                offerTypeContainer.style.display = "block";
+                ["COBE", "FCFS"].forEach(opt => {
+                    const optionElem = document.createElement("option");
+                    optionElem.value = opt;
+                    optionElem.textContent = opt;
+                    offerTypeSelect.appendChild(optionElem);
+                });
+            } else if (category === "Exchange Offers") {
+                offerTypeContainer.style.display = "block";
+                ["Open Offer", "April Offer", "Winter Offer", "Autumn Offer"].forEach(opt => {
+                    const optionElem = document.createElement("option");
+                    optionElem.value = opt;
+                    optionElem.textContent = opt;
+                    offerTypeSelect.appendChild(optionElem);
+                });
+            } else {
+                // Reserved Offers: hide sub-options
+                offerTypeContainer.style.display = "none";
+            }
+        }
+
+        // --- Task Action Change (show custom input) ---
+        function onTaskActionChange() {
+            const action = document.getElementById("taskAction").value;
+            const customSection = document.getElementById("customTaskActionSection");
+            if (action === "Other") {
+                customSection.classList.remove("hidden");
+            } else {
+                customSection.classList.add("hidden");
+                document.getElementById("customTaskAction").value = "";
+            }
+        }
+
+        // Helper: Time-based greeting
+        function getGreeting() {
+            const hour = new Date().getHours();
+            if (hour < 12) return "Good morning Team,";
+            if (hour < 17) return "Good afternoon Team,";
+            return "Good evening Team,";
+        }
+
+        // --- Add Task & Confirmation ---
+        function addTask() {
+            const offerCategory = document.getElementById("offerCategory").value;
+            const offerType = document.getElementById("offerType").value;
+            let taskAction = document.getElementById("taskAction").value;
+
+            // If "Other" is selected, get the custom action value
+            if (taskAction.toLowerCase() === "other") {
+                const customAction = document.getElementById("customTaskAction").value.trim();
+                if (!customAction) {
+                    alert("Please enter a custom action.");
+                    return;
+                }
+                taskAction = customAction;
+            }
+
+            const offerNumber = document.getElementById("offerNumber").value.trim();
+            const candidateName = document.getElementById("candidateName").value.trim();
+
+            // Simple validation
+            if (!offerCategory) {
+                alert("Please select an Offer Category.");
+                return;
+            }
+            if (!offerType && offerCategory !== "Reserved Offers") {
+                alert("Please select an Offer Type.");
+                return;
+            }
+            if (!taskAction) {
+                alert("Please select or enter a Task Action.");
+                return;
+            }
+            if (!offerNumber) {
+                alert("Please enter an Offer Number.");
+                return;
+            }
+            if (!candidateName) {
+                alert("Please enter a Candidate Name.");
+                return;
+            }
+
+            // Create the task object
+            const task = {
+                coordinator,
+                datetime: new Date().toISOString(),
+                offerCategory,
+                offerType: offerCategory === "Reserved Offers" ? "Reserved Offers" : offerType,
+                taskAction,
+                offerNumber,
+                candidateName,
+            };
+
+            // Add task to the global tasks array
+            tasks.push(task);
+
+            // Save to localStorage
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+
+            alert("Task added successfully!");
+            document.getElementById("addTaskForm").reset();
+            document.getElementById("customTaskActionSection").classList.add("hidden");
+            updateTaskList();
+        }
+
+        function showTaskConfirmation() {
+            const t = window.pendingTask;
+            let detailText =
+                `Coordinator   : ${t.coordinator}\n` +
+                `Offer Category: ${t.offerCategory}\n`;
+            if (t.offerCategory !== "Reserved Offers") {
+                detailText += `Offer Type    : ${t.offerType}\n`;
+            }
+            detailText +=
+                `Task Action   : ${t.taskAction}\n` +
+                `Offer Number  : ${t.offerNumber}\n` +
+                `Candidate Name: ${t.candidateName}\n` +
+                `Date & Time   : ${new Date(t.datetime).toLocaleString()}`;
+
+            document.getElementById("taskConfirmDetails").innerText = detailText;
+            document.getElementById("taskInputSection").style.display = "none";
+            document.getElementById("taskConfirmSection").classList.remove("hidden");
+        }
+
+        function confirmTask() {
+            if (window.pendingTask) {
+                tasks.push(window.pendingTask);
+                window.pendingTask = null;
+                // Save updated tasks array to localStorage
+                localStorage.setItem("tasks", JSON.stringify(tasks));
+                updateTaskList();
+                resetTaskForm();
+                document.getElementById("taskConfirmSection").classList.add("hidden");
+                document.getElementById("taskInputSection").style.display = "block";
+            }
+        }
+
+        function cancelTask() {
+            window.pendingTask = null;
+            document.getElementById("taskConfirmSection").classList.add("hidden");
+            document.getElementById("taskInputSection").style.display = "block";
+        }
+
+        // --- Reset Task Form ---
+        function resetTaskForm() {
+            document.getElementById("offerCategory").value = "";
+            document.getElementById("offerType").innerHTML = "<option value=\"\">-- Select Type --</option>";
+            document.getElementById("taskAction").value = "";
+            document.getElementById("customTaskAction").value = "";
+            document.getElementById("customTaskActionSection").classList.add("hidden");
+            document.getElementById("offerNumber").value = "";
+            document.getElementById("candidateName").value = "";
+            // Make sure offer type is visible after reset
+            document.getElementById("offerTypeContainer").style.display = "block";
+        }
+
+        // --- Update Task List Display ---
+        function updateTaskList() {
+            const listDiv = document.getElementById("taskList");
+            if (!coordinator || tasks.length === 0) {
+                listDiv.innerText = "No tasks added yet.";
+                return;
+            }
+
+            // Show only tasks entered by this coordinator
+            const filteredTasks = tasks.filter(t => t.coordinator === coordinator);
+            if (filteredTasks.length === 0) {
+                listDiv.innerText = "No tasks added yet.";
+                return;
+            }
+
+            let listText = "";
+            filteredTasks.forEach((t, i) => {
+                listText += `${i + 1}. ${t.taskAction} for Offer #${t.offerNumber} [${t.candidateName}] ` +
+                            `in ${t.offerCategory}` +
+                            (t.offerCategory !== "Reserved Offers" ? ` - ${t.offerType}` : "") +
+                            ` (${new Date(t.datetime).toLocaleString()})\n`;
+            });
+            listDiv.innerText = listText;
+        }
+
+        // --- Delete All Data ---
+        function deleteAllData() {
+            if (confirm("Are you sure you want to delete ALL data? This cannot be undone!")) {
+                tasks = [];
+                localStorage.setItem("tasks", JSON.stringify(tasks));
+                updateTaskList();
+                alert("All data has been deleted.");
+            }
+        }
+
+        // --- Report Generation ---
+
+        function generateWeeklyReport() {
+            const now = new Date();
+            const startDate = getLastSunday(now);
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+
+            const filtered = tasks.filter(t => {
+                const d = new Date(t.datetime);
+                return d >= startDate && d <= endDate;
+            });
+
+            const greeting = getGreeting();
+            let reportText = `${greeting}\n\nWEEKLY REPORT - OUTGOING\n` +
+                            `(${formatRange(startDate, endDate)})\n\nCompleted Tasks:\n`;
+
+            if (filtered.length === 0) {
+                reportText += "No tasks completed this week.\n";
+            } else {
+                const groups = {};
+                filtered.forEach(task => {
+                    if (!groups[task.taskAction]) groups[task.taskAction] = [];
+                    groups[task.taskAction].push(`Offer #${task.offerNumber} [${task.candidateName}]`);
+                });
+
+                let idx = 1;
+                for (const action in groups) {
+                    reportText += `${idx}. ${action} mail sented to:\n`;
+                    groups[action].forEach(cand => {
+                        reportText += `    - ${cand}\n`;
+                    });
+                    idx++;
+                }
+            }
+
+            reportText += `\nAssigned Tasks:\n1. To be updated by coordinators.\n`;
+            displayReport(reportText);
+        }
+
+        function generate15DaysReport() {
+            const now = new Date();
+            const startDate = new Date(now);
+            startDate.setDate(startDate.getDate() - 14);
+
+            const filtered = tasks.filter(t => {
+                const d = new Date(t.datetime);
+                return d >= startDate && d <= now;
+            });
+
+            const greeting = getGreeting();
+            let reportText = `${greeting}\n\n` +
+                            `Here is the update for the last 15 days for the *Outgoing portfolio*\n\n` +
+                            `*${formatDate(startDate)} - ${formatDate(now)}*\n\n`;
+
+            if (filtered.length === 0) {
+                reportText += "No tasks completed in the last 15 days.\n";
+            } else {
+                const reportData = {};
+                filtered.forEach(task => {
+                    const cat = task.offerCategory;
+                    const typ = task.offerCategory === "Reserved Offers" ? "Reserved Offers" : task.offerType;
+                    if (!reportData[cat]) reportData[cat] = {};
+                    if (!reportData[cat][typ]) {
+                        reportData[cat][typ] = { Nominated: 0, Accepted: 0, Rejected: 0, Cancelled: 0, Withdrawn: 0 };
+                    }
+                    const key = mapActionToKey(task.taskAction);
+                    if (key) reportData[cat][typ][key]++;
+                });
+
+                for (const cat of ["Global Internship", "Exchange Offers", "Reserved Offers"]) {
+                    if (!reportData[cat]) continue;
+                    reportText += `Offer Type - *${cat}*\n\n`;
+                    for (const typ in reportData[cat]) {
+                        const d = reportData[cat][typ];
+                        reportText += `*${typ}*\n` +
+                                    `No. of offers Nominated: ${d.Nominated}\n` +
+                                    `No. of offers Accepted: ${d.Accepted}\n` +
+                                    `No. of offers Rejected: ${d.Rejected}\n` +
+                                    `No. of offers Cancelled: ${d.Cancelled}\n` +
+                                    `No. of offers Withdrawn: ${d.Withdrawn}\n\n`;
+                    }
+                }
+            }
+
+            reportText += `Thank you\nWith Regards,\n_Outgoing - Exchange_`;
+            displayReport(reportText);
+            
+        }
+
+        function generateMonthlyReport() {
+            const now = new Date();
+            const thisYear = now.getFullYear();
+            const thisMonth = now.getMonth(); // 0 = Jan, …, 5 = Jun, etc.
+
+            // Start of current month (day 1)
+            const startDate = new Date(thisYear, thisMonth, 1);
+            // End date is today
+            const endDate = new Date(now);
+
+            // Filter tasks from start of month up to now
+            const filtered = tasks.filter(t => {
+                const d = new Date(t.datetime);
+                return d >= startDate && d <= endDate;
+            });
+
+            // Define categories and sub‐types
+            const sections = {
+                "Global Internship": ["COBE", "FCFS"],
+                "Exchange Offers":   ["Open Offer", "April Offer", "Winter Offer", "Autumn Offer"],
+                "Reserved Offers":   []
+            };
+
+            // Initialize reportData with zero counts
+            const reportData = {};
+            for (const cat in sections) {
+                reportData[cat] = {};
+                sections[cat].forEach(sub => {
+                    reportData[cat][sub] = { Nominated: 0, Accepted: 0, Rejected: 0, Withdrawn: 0, Cancelled: 0 };
+                });
+                if (cat === "Reserved Offers") {
+                    reportData[cat]["Reserved Offers"] = { Nominated: 0, Accepted: 0, Rejected: 0, Withdrawn: 0, Cancelled: 0 };
+                }
+            }
+
+            // Tally each filtered task into the correct bucket
+            filtered.forEach(task => {
+                const cat = task.offerCategory;
+                const typ = task.offerCategory === "Reserved Offers" ? "Reserved Offers" : task.offerType;
+                if (reportData[cat] && reportData[cat][typ]) {
+                    const key = mapActionToKey(task.taskAction);
+                    if (key) reportData[cat][typ][key]++;
+                }
+            });
+
+            // Build the report text (month-to-date)
+            let reportText =
+                `Dear Sir,\n\n` +
+                `I hope this email finds you well.\n` +
+                `PFB the Work Update for ${formatMonthYear(startDate)} (1st – ${formatDayMonth(now)})\n\n` +
+                `1. The database is updated as of ${formatDate(endDate)}\n` +
+                `2. Offer-wise Statistics\n\n`;
+
+            for (const cat in reportData) {
+                reportText += `${cat}:\n`;
+                const subTypes = Object.keys(reportData[cat]);
+
+                subTypes.forEach(sub => {
+                    reportText += `  • ${sub}:\n`;
+                    const d = reportData[cat][sub];
+                    reportText += `      - Offers Nominated (Successful): ${d.Nominated}\n`;
+                    reportText += `      - Offers Accepted: ${d.Accepted}\n`;
+                    reportText += `      - Offers Rejected: ${d.Rejected}\n`;
+                    reportText += `      - Offers Withdrawn: ${d.Withdrawn}\n`;
+                    reportText += `      - Offers Cancelled: ${d.Cancelled}\n\n`;
+                });
+            }
+
+            reportText += `Thank you,\nWarm Regards,\n${coordinator}`;
+            displayReport(reportText);
+        }
+
+        // ===== Generate Report Statistics =====
+        function generateStatistics() {
+            if (!coordinator) {
+                alert("Please login first.");
+                return;
+            }
+
+            // Filter tasks for current coordinator only
+            const coordinatorTasks = tasks.filter(t => t.coordinator === coordinator);
+            
+            if (coordinatorTasks.length === 0) {
+                alert("No tasks available for statistics.");
+                return;
+            }
+
+            // Initialize categories and types
+            const categories = {
+                "Global Internship": ["COBE", "FCFS"],
+                "Exchange Offers": ["Open Offer", "April Offer", "Winter Offer", "Autumn Offer"],
+                "Reserved Offers": ["Reserved Offers"]
+            };
+
+            // Build statistics structure
+            const stats = {};
+            Object.keys(categories).forEach(cat => {
+                stats[cat] = {};
+                categories[cat].forEach(type => {
+                    stats[cat][type] = {
+                        Nominated: [],
+                        Accepted: [],
+                        Rejected: [],
+                        Withdrawn: [],    // Added if needed
+                        Cancelled: []     // Added if needed
+                    };
+                });
+            });
+
+            // Populate statistics
+            coordinatorTasks.forEach(t => {
+                const cat = t.offerCategory;
+                const typ = cat === "Reserved Offers" ? "Reserved Offers" : t.offerType;
+                const key = mapActionToKey(t.taskAction);
+                
+                if (stats[cat] && stats[cat][typ] && key && stats[cat][typ][key] !== undefined) {
+                    const entry = `${t.offerNumber} (${t.candidateName})`;
+                    stats[cat][typ][key].push(entry);
+                }
+            });
+
+            // Format output
+            let output = "";
+            
+            // Global Internship section
+            output += "=== GLOBAL INTERNSHIP ===\n\n";
+            
+            ["COBE", "FCFS"].forEach(type => {
+                const typeData = stats["Global Internship"][type];
+                if (hasData(typeData)) {
+                    output += `** ${type} **\n`;
+                    output += formatTypeData(typeData);
+                    output += "\n";
+                }
+            });
+
+            // Exchange Offers section
+            output += "=== EXCHANGE OFFERS ===\n\n";
+            ["April Offer", "Winter Offer", "Autumn Offer", "Open Offer"].forEach(type => {
+                const typeData = stats["Exchange Offers"][type];
+                if (hasData(typeData)) {
+                    output += `** ${type} **\n`;
+                    output += formatTypeData(typeData);
+                    output += "\n";
+                }
+            });
+
+            // Reserved Offers
+            output += "=== RESERVED OFFERS ===\n\n";
+            const reservedData = stats["Reserved Offers"]["Reserved Offers"];
+            if (hasData(reservedData)) {
+                output += formatTypeData(reservedData);
+            }
+
+            // Display statistics in report view
+            displayReport(output);
+
+            // Helper function to check if a type has any data
+            function hasData(typeData) {
+                return Object.values(typeData).some(arr => arr.length > 0);
+            }
+
+            // Helper function to format data for a specific type
+            function formatTypeData(typeData) {
+                let result = "";
+                for (const [status, items] of Object.entries(typeData)) {
+                    if (items.length > 0) {
+                        result += `${status.toUpperCase()}\n`;
+                        items.forEach(item => result += `${item}\n`);
+                        result += "\n";
+                    }
+                }
+                return result;
+            }
+        }
+
+        // Updated to include more statuses if needed
+        function mapActionToKey(action) {
+            action = action.toLowerCase();
+            if (action.includes("nominate")) return "Nominated";
+            if (action.includes("accept")) return "Accepted";
+            if (action.includes("reject")) return "Rejected";
+            if (action.includes("withdraw")) return "Withdrawn";
+            if (action.includes("cancel")) return "Cancelled";
+            return null;
+        }
+
+        // Format "1 Jun 2025" style for a single day
+        function formatDayMonth(date) {
+            const day = date.getDate();
+            const suffix = ((d) => (d > 3 && d < 21) ? 'th' : {1:'st',2:'nd',3:'rd'}[d % 10] || 'th')(day);
+            const month = date.toLocaleString('default', { month: 'short' });
+            return `${day}${suffix} ${month}`;
+        }
+
+        function formatMonthYear(date) {
+            const month = date.toLocaleString('default', { month: 'long' });
+            const year = date.getFullYear();
+            return `${month} ${year}`;
+        }
+
+        // Format "31st May 2025" style for full dates
+        function formatDate(date) {
+            const day = date.getDate();
+            const suffix = ((d) => (d > 3 && d < 21) ? 'th' : {1:'st',2:'nd',3:'rd'}[d % 10] || 'th')(day);
+            const month = date.toLocaleString('default', { month: 'long' });
+            const year = date.getFullYear();
+            return `${day}${suffix} ${month} ${year}`;
+        }
+
+        // Format "DD MMM YYYY - DD MMM YYYY"
+        function formatRange(start, end) {
+            return `${formatDate(start)} - ${formatDate(end)}`;
+        }
+
+        function getLastSunday(date) {
+            const day = date.getDay();
+            const diff = day === 0 ? 0 : day;
+            const sunday = new Date(date);
+            sunday.setDate(date.getDate() - diff);
+            sunday.setHours(0, 0, 0, 0);
+            return sunday;
+        }
+
+        // Override displayReport() to show embedded report section
+        function displayReport(text) {
+            // Put the report string into #report-text
+            document.getElementById("report-text").innerText = text;
+
+            // Hide main-section entirely, show report-section
+            document.getElementById("main-section").classList.add("hidden-section");
+            document.getElementById("report-section").style.display = "block";
+        }
+    </script>
+</body>
+</html>
