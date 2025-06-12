@@ -103,4 +103,4 @@ License
 
 Author
    Akshitha Anurag
-   GitHub Profile:
+   link: https://akshithaanurag.github.io/Corporate-Offer-Generation-Portal/
